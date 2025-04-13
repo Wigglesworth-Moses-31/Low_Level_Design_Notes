@@ -1,0 +1,480 @@
+## **1. High-Level vs. Low-Level System Design**
+
+### **High-Level Design (HLD):**
+- **Focus**: System architecture and how modules interact.
+- **Scope**: Involves decisions about databases, load balancers, caching, microservices, and overall system flow.
+- **Audience**: Can be explained to business stakeholders in layman’s terms, focusing on business logic and system components.
+- **Example**: In Swiggy, HLD would involve designing how the user app, restaurant service, delivery partner system, and payment gateway communicate via APIs, with a load balancer distributing traffic.
+
+### **Low-Level Design (LLD):**
+- **Focus**: Implementation details, such as classes, methods, and code structure.
+- **Scope**: Centers on writing maintainable, extensible, and modular code, typically what developers (especially SD1/SD2 roles) work on.
+- **Audience**: Technical, aimed at developers, focusing on how code is structured and functions are implemented.
+- **Example**: In Swiggy, LLD would involve designing the `Order` class, its properties (e.g., `orderId`, `status`), and methods (e.g., `placeOrder()`, `getOrderDetails()`).
+
+**Key Takeaway**: HLD is about the big picture (system architecture), while LLD is about the nuts and bolts (code-level design). As a junior developer, you’ll primarily focus on LLD, writing code that’s readable, maintainable, and extensible, even if team members change or new features are added years later.
+
+---
+
+## **2. Object-Oriented Programming (OOP)**
+
+OOP is a programming paradigm that models real-world entities as objects, enabling modular, reusable, and maintainable code. It revolves around four core concepts: **Encapsulation**, **Abstraction**, **Inheritance**, and **Polymorphism**.
+
+### **Classes and Objects**
+- **Class**: A blueprint or template defining properties (variables) and behaviors (methods) of an entity.
+  - **Example**: In Zomato, an `Order` class might have variables like `orderId`, `status`, and methods like `placeOrder()`, `getOrderDetails()`.
+- **Object**: An instance of a class with actual values.
+  - **Example**: `order1` with `orderId=123` and `status="placed"` is an object of the `Order` class.
+- **Analogy**: A class is like a recipe for a cake (defines ingredients and steps), while an object is an actual cake baked from that recipe.
+
+### **Core OOP Concepts**
+
+#### **Encapsulation**
+- **Definition**: Bundling data (variables) and methods (functions) into a single unit (class) while controlling access to protect data integrity.
+- **Purpose**: Ensures data is accessed or modified only through defined methods, preventing unauthorized changes.
+- **Implementation**: Use access modifiers like `private`, `public`, and `protected`.
+  - **Private**: Accessible only within the class.
+  - **Public**: Accessible from anywhere.
+  - **Protected**: 
+    - In **C++**: Accessible by derived (child) classes.
+    - In **Java**: Accessible by classes in the same package or derived classes.
+- **Example**: In Uber, a `Driver` class might have:
+  ```java
+  class Driver {
+      private String driverId;
+      private String name;
+      
+      public String getName() { return name; }
+      public void setName(String name) { this.name = name; }
+  }
+  ```
+  Here, `driverId` and `name` are private, accessible only via public getters/setters, ensuring controlled access.
+
+#### **Abstraction**
+- **Definition**: Hiding complex implementation details and exposing only essential features to the user.
+- **Purpose**: Simplifies interaction by focusing on what an object does, not how it does it.
+- **Implementation**: Achieved through abstract classes or interfaces.
+- **Example**: In Amazon, an `OrderManager` class might provide a `placeOrder()` method. The user doesn’t need to know how payment validation or inventory checks happen internally.
+  ```java
+  abstract class OrderManager {
+      abstract void placeOrder();
+  }
+  ```
+  The complexity of order placement is abstracted away, and users only call `placeOrder()`.
+
+#### **Inheritance**
+- **Definition**: A mechanism where a child class inherits properties and methods from a parent class.
+- **Purpose**: Promotes code reuse and extends functionality.
+- **Example**: In Swiggy, a `Restaurant` class could be a parent, with child classes like `FastFoodRestaurant` and `Cafe` inheriting common properties (e.g., `name`, `location`) and adding specific ones (e.g., `menuType`).
+  ```java
+  class Restaurant {
+      String name;
+      String location;
+  }
+  
+  class FastFoodRestaurant extends Restaurant {
+      String menuType = salad;
+  }
+  ```
+- **Key Point**: Child classes inherit parent class features, but ensure inherited methods make sense (see Liskov Substitution Principle later).
+
+#### **Polymorphism**
+- **Definition**: The ability of objects to take multiple forms, allowing different classes to be treated as instances of a common parent class.
+- **Purpose**: Enables flexibility and extensibility by allowing different implementations of the same method.
+- **Types**:
+  - **Compile-Time (Static) Polymorphism**:
+    - Achieved through **function overloading** (same method name, different parameters) or **operator overloading**.
+    - **Example**: In Zomato, a `PaymentProcessor` class might have:
+      ```java
+      void processPayment(CreditCard card) { ... }
+      void processPayment(UPI upi) { ... }
+      ```
+      The compiler decides which method to call based on the parameter type.
+  - **Runtime (Dynamic) Polymorphism**:
+    - Achieved through **method overriding** and **virtual functions** (in C++).
+    - **Example**: In Uber, a `Vehicle` class with a `startTrip()` method can be overridden by `Car` and `Bike` classes.
+      ```java
+      class Vehicle {
+          void startTrip() { System.out.println("Trip started"); }
+      }
+      
+      class Car extends Vehicle {
+          @Override
+          void startTrip() { System.out.println("Car trip started"); }
+      }
+      ```
+      A `Vehicle` reference pointing to a `Car` object calls `Car`’s `startTrip()` at runtime.
+- **C++ vs. Java**:
+  - **C++**: Uses `virtual` keyword for runtime polymorphism, with a virtual pointer (vptr) and virtual table (vtable) to resolve method calls.
+  - **Java**: All non-final, non-static methods are virtual by default, using dynamic method dispatching.
+
+### **Abstract Classes vs. Interfaces**
+- **Abstract Class**:
+  - A class that cannot be instantiated and may contain both implemented (concrete) and unimplemented (abstract) methods.
+  - **Use Case**: When you want to share common code among related classes.
+  - **Example**: In Netflix, an `AbstractVideoPlayer` might have a concrete `initializePlayer()` method and an abstract `playVideo()` method.
+    ```java
+    abstract class AbstractVideoPlayer {
+        void initializePlayer() { System.out.println("Player initialized"); }
+        abstract void playVideo();
+    }
+    ```
+- **Interface**:
+  - A contract with only abstract methods (in Java, default methods can have implementation since Java 8).
+  - **Use Case**: When you want to enforce a specific behavior across unrelated classes.
+  - **Example**: In Swiggy, a `Payment` interface ensures all payment methods implement `pay()`.
+    ```java
+    interface Payment {
+        void pay();
+    }
+    
+    class GPAY implements Payment {
+        public void pay() { System.out.println("Paid via GPAY"); }
+    }
+    ```
+- **C++ vs. Java**:
+  - **C++**: Uses pure virtual functions (`virtual void func() = 0`) for interfaces. A class with at least one pure virtual function is abstract.
+  - **Java**: Explicit `interface` keyword; abstract classes use `abstract` keyword.
+- **Data Members**:
+  - **Abstract Class**: Can have instance variables.
+  - **Interface**: Only static final constants (in Java pre-8) or default methods (Java 8+).
+- **Key Difference**: Abstract classes are for “is-a” relationships with shared code; interfaces are for “can-do” relationships enforcing behavior.
+
+### **Final and Static (Java-Specific)**
+- **Final**:
+  - **Class**: Cannot be extended (e.g., `final class NoExtend {}`).
+  - **Method**: Cannot be overridden.
+  - **Variable**: Value cannot be changed after initialization.
+- **Static**:
+  - Belongs to the class, not instances.
+  - **Example**: In Amazon, a `static int orderCounter` in `Order` class tracks total orders across all objects.
+    ```java
+    class Order {
+        static int orderCounter = 0;
+        Order() { orderCounter++; }
+    }
+    ```
+
+---
+
+## **3. SOLID Principles**
+
+SOLID principles are guidelines for writing maintainable, extensible, and modular code. They help ensure code can adapt to new requirements without breaking existing functionality.
+
+### **S - Single Responsibility Principle (SRP)**
+- **Definition**: A class should have only one reason to change, meaning it should have one responsibility.
+- **Purpose**: Reduces complexity and makes classes easier to maintain.
+- **Example**: In Zomato, an `OrderValidator` class might validate user inputs, security, and funds. Should these be one class or separate?
+  - **Option 1 (Single Class)**:
+    ```java
+    class OrderValidator {
+        void validateInputs() { ... }
+        void validateSecurity() { ... }
+        void validateFunds() { ... }
+    }
+    ```
+    - **Pros**: All validation logic is centralized.
+    - **Cons**: If one validation changes (e.g., new security rules), the entire class must be modified.
+  - **Option 2 (Separate Classes)**:
+    ```java
+    class InputValidator { void validateInputs() { ... } }
+    class SecurityValidator { void validateSecurity() { ... } }
+    class FundsValidator { void validateFunds() { ... } }
+    ```
+    - **Pros**: Each class has one responsibility, easier to modify independently.
+    - **Cons**: More classes to manage.
+- **Subjectivity**: The “responsibility” is subjective. For small systems, one class might suffice; for scalable systems like Zomato, separate classes improve maintainability.
+- **Key Question**: “If a new feature is added, will this class need to change for multiple reasons?”
+
+### **O - Open/Closed Principle (OCP)**
+- **Definition**: Classes should be open for extension but closed for modification.
+- **Purpose**: Allows new functionality without altering tested code, reducing regression risks.
+- **Example**: In Swiggy, a `Logger` class handles debug and info logs. To add error logs:
+  - **Bad Approach** (Violates OCP):
+    ```java
+    class Logger {
+        void log(String type) {
+            if (type.equals("debug")) { ... }
+            else if (type.equals("info")) { ... }
+        }
+    }
+    ```
+    Adding error logs requires modifying `log()`, risking errors in existing debug/info logs.
+  - **Good Approach** (Follows OCP):
+    ```java
+    interface Log {
+        void log();
+    }
+    
+    class DebugLogger implements Log {
+        public void log() { System.out.println("Debug log"); }
+    }
+    
+    class ErrorLogger implements Log {
+        public void log() { System.out.println("Error log"); }
+    }
+    ```
+    New log types (e.g., `ErrorLogger`) can be added without changing existing code.
+- **Key Question**: “Can I add new features without modifying this class?”
+
+### **L - Liskov Substitution Principle (LSP)**
+- **Definition**: Subclasses should be substitutable for their base class without breaking functionality.
+- **Purpose**: Ensures inheritance maintains expected behavior.
+- **Example 1 (Violation)**: A `Rectangle` class with a `changeWidth()` method, inherited by `Square`.
+  ```java
+  class Rectangle {
+      int width, height;
+      void changeWidth(int w) { width = w; }
+      int getArea() { return width * height; }
+  }
+  
+  class Square extends Rectangle {
+      @Override
+      void changeWidth(int w) { width = height = w; } // Breaks square property
+  }
+  ```
+  If `Rectangle r = new Square()`, calling `r.changeWidth(5)` expects only width to change, but `Square` changes both, breaking LSP.
+- **Example 2 (Violation)**: In Swiggy, a `User` class with a `doKYC()` method, inherited by `Customer`, `DeliveryPartner`, and `RestaurantOwner`.
+  ```java
+  class User {
+      void doKYC() { ... }
+  }
+  
+  class Customer extends User {
+      void doKYC() { /* Empty or throws exception */ }
+  }
+  ```
+  `Customer` doesn’t need KYC, so substituting `User u = new Customer()` and calling `u.doKYC()` is problematic.
+- **Solution**: Restructure hierarchy (e.g., introduce a `Partner` class for KYC).
+  ```java
+  class User { ... }
+  
+  class Partner extends User {
+      void doKYC() { ... }
+  }
+  
+  class Customer extends User { ... }
+  class DeliveryPartner extends Partner { ... }
+  class RestaurantOwner extends Partner { ... }
+  ```
+- **Key Question**: “Can I replace a base class object with a derived class object without issues?”
+
+### **I - Interface Segregation Principle (ISP)**
+- **Definition**: Clients should not be forced to depend on methods they don’t use.
+- **Purpose**: Prevents bloated interfaces, making classes easier to implement.
+- **Example**: Reusing the Swiggy KYC example, a `User` interface with `doKYC()` forces `Customer` to implement an unneeded method.
+  - **Bad Approach**:
+    ```java
+    interface User {
+        void doKYC();
+        void placeOrder();
+    }
+    
+    class Customer implements User {
+        void doKYC() { /* Unneeded */ }
+        void placeOrder() { ... }
+    }
+    ```
+  - **Good Approach**:
+    ```java
+    interface Orderable {
+        void placeOrder();
+    }
+    
+    interface KYCable {
+        void doKYC();
+    }
+    
+    class Customer implements Orderable { ... }
+    class DeliveryPartner implements Orderable, KYCable { ... }
+    ```
+    `Customer` only implements what it needs.
+- **Key Question**: “Is this class forced to implement methods it doesn’t use?”
+
+### **D - Dependency Inversion Principle (DIP)**
+- **Definition**: High-level modules should not depend on low-level modules; both should depend on abstractions.
+- **Purpose**: Promotes loose coupling, making systems easier to extend and test.
+- **Example**: In Amazon, a `NotificationManager` sends notifications via SMS, WhatsApp, etc.
+  - **Bad Approach** (Tight Coupling):
+    ```java
+    class NotificationManager {
+        SMSSender sms = new SMSSender();
+        WhatsAppSender whatsapp = new WhatsAppSender();
+        
+        void send(String type) {
+            if (type.equals("sms")) sms.send();
+            else if (type.equals("whatsapp")) whatsapp.send();
+        }
+    }
+    ```
+    Adding a new sender (e.g., Telegram) requires modifying `NotificationManager`, violating OCP.
+  - **Good Approach** (Loose Coupling):
+    ```java
+    interface NotificationSender {
+        void send();
+    }
+    
+    class SMSSender implements NotificationSender { ... }
+    class WhatsAppSender implements NotificationSender { ... }
+    
+    class NotificationManager {
+        NotificationSender sender;
+        NotificationManager(NotificationSender sender) {
+            this.sender = sender;
+        }
+        void send() { sender.send(); }
+    }
+    ```
+    `NotificationManager` depends on the `NotificationSender` interface, not concrete classes. New senders can be added without changing `NotificationManager`.
+- **Overlap**: DIP often enforces OCP and SRP by reducing dependencies and isolating responsibilities.
+- **Key Question**: “Does this high-level module depend on abstractions or concrete implementations?”
+
+---
+
+## **4. Key Insights and Practical Tips**
+
+### **Why OOP and SOLID Matter**
+- **Maintainability**: Code that’s easy to understand and modify, even years later or by new developers.
+- **Extensibility**: New features can be added with minimal changes to existing code.
+- **Reusability**: Components can be reused across different parts of the system.
+- **Scalability**: Systems like Swiggy or Uber handle millions of users because their code is modular and loosely coupled.
+
+### **Applying to Real Systems**
+- **Swiggy/Zomato**:
+  - **Entities**: `User`, `Order`, `Restaurant`, `DeliveryPartner`, `Payment`.
+  - **OOP**: Use classes for each entity, with inheritance (e.g., `Customer` extends `User`) and interfaces (e.g., `Payment` for `GPAY`, `UPI`).
+  - **SOLID**:
+    - **SRP**: Separate `OrderValidator` into `InputValidator`, `FundsValidator`, etc.
+    - **OCP**: Use interfaces like `NotificationSender` to add new notification types.
+    - **LSP**: Ensure `Customer` doesn’t inherit unneeded methods like `doKYC()`.
+    - **ISP**: Split broad interfaces into specific ones (e.g., `Orderable`, `KYCable`).
+    - **DIP**: Depend on abstractions (e.g., `Payment` interface) rather than concrete classes (`GPAY`).
+- **Uber**:
+  - **Entities**: `Driver`, `Rider`, `Trip`, `Vehicle`.
+  - **OOP**: `Vehicle` as a parent class for `Car`, `Bike`, with a `TripManager` using polymorphism.
+  - **SOLID**: Similar to Swiggy, ensuring loose coupling and single responsibilities.
+- **Amazon**:
+  - **Entities**: `Order`, `Product`, `Cart`, `Payment`, `Inventory`.
+  - **OOP/SOLID**: Use abstraction for `OrderManager`, interfaces for payment methods, and dependency inversion for modularity.
+
+### **Common Pitfalls**
+- **Over-Engineering**: Dividing classes too finely (e.g., one class per validation rule) can increase complexity without benefit. Balance SRP with practicality.
+- **Misusing Inheritance**: Avoid inheriting methods that don’t make sense (e.g., `Square` from `Rectangle`, `Customer` with `doKYC()`).
+- **Tight Coupling**: Avoid hardcoding dependencies (e.g., `SMSSender` in `NotificationManager`). Use interfaces for flexibility.
+- **Ignoring Requirements**: Design with future extensibility in mind. For example, Swiggy might add drone delivery, so ensure `Delivery` classes are extensible.
+
+### **C++ vs. Java Considerations**
+- **C++**: Explicit memory management and virtual functions add complexity. Use pure virtual functions for interfaces.
+- **Java**: Simpler syntax for interfaces and abstract classes, with automatic runtime polymorphism. Be cautious with `final` and `static`.
+
+### **Subjectivity in SOLID**
+- Principles like SRP and when to use interfaces vs. abstract classes are subjective and depend on:
+  - **System Scale**: Small apps may tolerate single classes; large systems like Uber need modularity.
+  - **Team Structure**: Multiple teams working on the same class (e.g., security vs. funds validation) suggest separation.
+  - **Future Requirements**: Anticipate features like subscriptions or new payment methods to guide design.
+
+---
+
+## **5. Clarifications for Beginners**
+
+- **Overwhelm**: The lecture covers a lot, but concepts like polymorphism or SOLID become clearer with practice. Focus on understanding one principle at a time.
+- **JavaScript/Python Background**: OOP concepts apply universally. In JavaScript, use constructor functions or ES6 classes; in Python, use classes with similar principles.
+- **Examples**: Stick to systems like Swiggy/Uber for context. Think about entities (e.g., `Order`, `User`) and their interactions.
+- **Resources**:
+  - Practice writing small programs (e.g., a basic `Order` class with `placeOrder()`).
+  - Use online platforms like LeetCode or HackerRank for OOP problems.
+  - Refer to books like *Clean Code* by Robert C. Martin for SOLID principles.
+
+---
+
+## **6. Next Steps (Based on Lecture)**
+
+- **Day 2 Topics**:
+  - **Class Relationships**: Composition vs. inheritance, aggregation.
+  - **UML Diagrams**: Learn to visualize designs (e.g., class diagrams for Swiggy’s `Order` system).
+  - **Principles**: DRY (Don’t Repeat Yourself), KISS (Keep It Simple, Stupid), GRASP.
+- **Practice**:
+  - Design a simple Swiggy `Order` system with classes for `Order`, `Customer`, `Restaurant`, and `Payment`.
+  - Apply SOLID principles (e.g., separate validation logic, use interfaces for payments).
+  - Draw a UML diagram for your design.
+- **Quizzes/Assignments**: Participate in quizzes to reinforce concepts. Expect assignments to implement designs in C++ or Java.
+
+---
+
+## **7. Answering Common Questions from the Transcript**
+
+- **Functional vs. OOP**: While functional programming is used in some contexts (e.g., serverless, parallel processing), OOP remains dominant for scalable systems like Swiggy or Uber due to its modularity and maintainability. Functional code with many `if-else` statements (as mentioned) suggests poor design, reinforcing OOP’s value.
+- **Language Choice (C++ vs. Java)**: For LLD, focus on concepts, not syntax. Most companies (e.g., Google, Amazon) don’t care about language for LLD interviews, but confirm requirements for C++-specific roles (e.g., Adobe).
+- **Frameworks**: LLD focuses on code structure, not frameworks (e.g., Spring, J2EE). Frameworks apply patterns you’ll learn (e.g., Factory, Singleton), but interviews emphasize raw design skills.
+- **State Design Pattern**: Will be addressed if added to the curriculum. It’s useful for systems with state-dependent behavior (e.g., an `Order` transitioning from “placed” to “delivered”).
+
+---
+
+## **8. Example: Swiggy System Design**
+
+Let’s apply OOP and SOLID to a simplified Swiggy system:
+
+```java
+interface Orderable {
+    void placeOrder();
+}
+
+interface KYCable {
+    void doKYC();
+}
+
+interface Payment {
+    void pay();
+}
+
+abstract class User {
+    String id;
+    String name;
+}
+
+class Customer extends User implements Orderable {
+    public void placeOrder() { System.out.println("Order placed by customer"); }
+}
+
+class Partner extends User implements KYCable {
+    public void doKYC() { System.out.println("KYC completed"); }
+}
+
+class DeliveryPartner extends Partner implements Orderable {
+    public void placeOrder() { System.out.println("Order assigned to delivery partner"); }
+}
+
+class RestaurantOwner extends Partner {
+    // Restaurant-specific methods
+}
+
+class GPAY implements Payment {
+    public void pay() { System.out.println("Paid via GPAY"); }
+}
+
+class Order {
+    String orderId;
+    String status;
+    Payment paymentMethod;
+    
+    Order(Payment paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    void processPayment() {
+        paymentMethod.pay();
+    }
+}
+
+class OrderValidator {
+    void validate() { /* Input, security, funds validation */ }
+}
+```
+
+- **SRP**: `OrderValidator` could be split into `InputValidator`, `SecurityValidator`, etc., if requirements grow.
+- **OCP**: New payment methods (e.g., `Paytm`) can be added via the `Payment` interface.
+- **LSP**: `Customer` doesn’t inherit `doKYC()`, ensuring substitutability.
+- **ISP**: `Customer` only implements `Orderable`, not `KYCable`.
+- **DIP**: `Order` depends on the `Payment` interface, not concrete classes like `GPAY`.
+
+---
